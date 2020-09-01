@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TouchControlsKit;
+
 
 public class CharacterMovement : MonoBehaviour
 {
@@ -11,6 +13,9 @@ public class CharacterMovement : MonoBehaviour
     public float playerSpeed = 2.0f;
     public float jumpHeight = 1.0f;
     private float gravityValue = -9.81f;
+
+    public float atkSpeed = 1.5f;
+    protected float atkCountingTime = 0;
 
     private void Start()
     {
@@ -27,14 +32,23 @@ public class CharacterMovement : MonoBehaviour
 
         if (isControl)
         {
-            Vector3 move = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
-            controller.Move(move * Time.deltaTime * playerSpeed);
-
-            if (move != Vector3.zero)
+            if(Input.GetAxis("Horizontal") != 0 || TCKInput.GetAxis("Joystick", EAxisType.Horizontal) != 0 ||
+               Input.GetAxis("Vertical") != 0 || TCKInput.GetAxis("Joystick", EAxisType.Vertical) != 0 )
             {
-                gameObject.transform.forward = move;
+                GetComponent<Controller_PC>().state = "Control";
             }
 
+            if (GetComponent<Controller_PC>().state != "MoveToTarget")
+            {
+                //Vector3 move = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+                Vector3 move = new Vector3(TCKInput.GetAxis("Joystick", EAxisType.Horizontal) + Input.GetAxis("Horizontal"), 0, TCKInput.GetAxis("Joystick", EAxisType.Vertical) + Input.GetAxis("Vertical"));
+                controller.Move(move * Time.deltaTime * playerSpeed);
+
+                if (move != Vector3.zero)
+                {
+                    gameObject.transform.forward = move;
+                }
+            }
         }
 
         // Changes the height position of the player..

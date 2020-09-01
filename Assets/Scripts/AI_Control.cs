@@ -11,6 +11,7 @@ public class AI_Control : MonoBehaviour
     protected CharacterStatus targetStatus;
     protected CharacterMovement characterMovement;
 
+    public bool isHero;
     public bool isMovement;
     public string state = "Standby";
     public Transform attackPoint;
@@ -49,10 +50,10 @@ public class AI_Control : MonoBehaviour
         }
     }
 
-    public void OnAreaTriggerEnter(Collider col)
+    public virtual void OnAreaTriggerEnter(Collider col)
     {
         Debug.Log(gameObject.name + " AreaTriggerEnter " + col.name);
-        if (col.gameObject.tag == enemyTeam && col.gameObject.layer == 8)
+        if (col.gameObject.tag == enemyTeam && col.gameObject.layer == 8 && !isHero)
         {
             if(!moveTarget)
                 moveTarget = col.gameObject;
@@ -82,11 +83,11 @@ public class AI_Control : MonoBehaviour
         //enemyList.Remove(col.gameObject);
     }
 
-    public void OnAttackTriggerEnter(Collider col)
+    public virtual void OnAttackTriggerEnter(Collider col)
     {
         if (!target)
         {
-            if (col.gameObject.tag == enemyTeam && col.gameObject.layer == 8)
+            if (col.gameObject.tag == enemyTeam && col.gameObject.layer == 8 && !isHero)
             {
                 moveTarget = col.gameObject;
                 target = col.gameObject;
@@ -95,18 +96,18 @@ public class AI_Control : MonoBehaviour
             }
         }
     }
-    //public void OnAttackTriggerStay(Collider col)
-    //{
-    //    if (!target)
-    //    {
-    //        if (col.gameObject == moveTarget)
-    //        {
-    //            target = col.gameObject;
-    //            targetStatus = target.GetComponent<CharacterStatus>();
-    //            state = "Attack";
-    //        }
-    //    }
-    //}
+    public virtual void OnAttackTriggerStay(Collider col)
+    {
+        if (!target)
+        {
+            if (col.gameObject.tag == enemyTeam && col.gameObject.layer == 8 && !isHero)
+            {
+                target = col.gameObject;
+                targetStatus = target.GetComponent<CharacterStatus>();
+                state = "Attack";
+            }
+        }
+    }
     public void OnAttackTriggerExit(Collider col)
     {
         if (col.gameObject == target)
@@ -115,7 +116,7 @@ public class AI_Control : MonoBehaviour
         }
     }
 
-    IEnumerator ResetTrigger()
+    protected IEnumerator ResetTrigger()
     {
         areaTrigger.enabled = false;
         attackTrigger.enabled = false;

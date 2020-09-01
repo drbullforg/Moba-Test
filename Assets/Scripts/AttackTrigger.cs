@@ -12,13 +12,13 @@ public class AttackTrigger : MonoBehaviour
         ai.OnAttackTriggerEnter(other);
     }
 
-    //private void OnTriggerStay(Collider other)
-    //{
-    //    if (!ai.target)
-    //    {
-    //        ai.OnAttackTriggerStay(other);
-    //    }
-    //}
+    private void OnTriggerStay(Collider other)
+    {
+        if (!ai.target)
+        {
+            ai.OnAttackTriggerStay(other);
+        }
+    }
 
     private void OnTriggerExit(Collider other)
     {

@@ -1,44 +1,121 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TouchControlsKit;
 
-public class Controller_PC : MonoBehaviour
+public class Controller_PC : AI_Control
 {
-    public CharacterMovement character;
-    public Transform cameraPos;
-
-    // Start is called before the first frame update
-    void Start()
+    public override void OnAreaTriggerEnter(Collider col)
     {
-        character = GetComponent<CharacterMovement>();
-        cameraPos = Camera.main.transform.parent;
+        Debug.Log(gameObject.name + " AreaTriggerEnter " + col.name);
+        if (col.gameObject.tag == enemyTeam && col.gameObject.layer == 8)
+        {
+            if (!moveTarget)
+                moveTarget = col.gameObject;
+            //enemyList.Add(col.gameObject);
+            //state = "MoveToTarget";
+        }
     }
 
-    // Update is called once per frame
-    void Update()
+    public override void OnAttackTriggerEnter(Collider col)
     {
-        //if (Input.GetKey(KeyCode.W))
-        //{
-        //    character.Move(cameraPos.right);
-        //    character.Rotate(cameraPos.forward);
-        //}
+        if (!target)
+        {
+            if (col.gameObject.tag == enemyTeam && col.gameObject.layer == 8)
+            {
+                moveTarget = col.gameObject;
+                target = col.gameObject;
+                targetStatus = target.GetComponent<CharacterStatus>();
+                state = "Attack";
+            }
+        }
+    }
 
-        //if (Input.GetKey(KeyCode.A))
-        //{
-        //    character.Move(cameraPos.forward);
-        //    character.Rotate(-cameraPos.right);
-        //}
+    public override void OnAttackTriggerStay(Collider col)
+    {
+        if (!target)
+        {
+            if (col.gameObject.tag == enemyTeam && col.gameObject.layer == 8)
+            {
+                moveTarget = col.gameObject;
+                target = col.gameObject;
+                targetStatus = target.GetComponent<CharacterStatus>();
+                state = "Attack";
+            }
+        }
+    }
 
-        //if (Input.GetKey(KeyCode.S))
-        //{
-        //    character.Move(-cameraPos.right);
-        //    character.Rotate(-cameraPos.forward);
-        //}
+    protected override void Update()
+    {
+        if (GameSystem.instance.gameState == GameState.Start)
+        {
+            if (atkCountingTime > 0)
+            {
+                atkCountingTime -= Time.deltaTime;
+            }
 
-        //if (Input.GetKey(KeyCode.D))
-        //{
-        //    character.Move(-cameraPos.forward);
-        //    character.Rotate(cameraPos.right);
-        //}
+            if (TCKInput.GetAction("fireBtn", EActionEvent.Press))
+            {
+                StartCoroutine(ResetTrigger());
+
+                if (moveTarget)
+                {
+                    state = "MoveToTarget";
+                }
+
+                if(target)
+                {
+                    state = "Attack";
+                }
+            }
+            if (state == "Standby")
+            {
+                if (isMovement)
+                {
+                    if (moveTarget)
+                    {
+                        state = "MoveToTarget";
+                    }
+
+                    if (target)
+                    {
+                        state = "Attack";
+                    }
+                }
+            }
+            else if(state == "Control")
+            {
+
+            }
+            else if (state == "MoveToTarget")
+            {
+                if (isMovement)
+                {
+                    if (moveTarget)
+                    {
+                        //transform.position = Vector3.MoveTowards(transform.position, moveTarget.transform.position, characterMovement.playerSpeed);
+                        Vector3 move = (moveTarget.transform.position - transform.position).normalized;
+                        characterMovement.controller.Move(move * Time.deltaTime * characterMovement.playerSpeed);
+                    }
+                }
+            }
+            else if (state == "Attack")
+            {
+                if (target)
+                {
+                    if (atkCountingTime <= 0)
+                    {
+                        AttackNow();
+                        atkCountingTime = atkSpeed;
+                    }
+
+                    if (targetStatus.CheckDead())
+                    {
+                        target = null;
+                        //state = "Standby";
+                    }
+                }
+            }
+        }
     }
 }
