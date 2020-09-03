@@ -16,7 +16,13 @@ public class AttackTrigger : MonoBehaviour
     {
         if (!ai.target)
         {
-            ai.OnAttackTriggerStay(other);
+            if(other.GetComponent<CharacterStatus>())
+            {
+                if(!other.GetComponent<CharacterStatus>().CheckDead())
+                {
+                    ai.OnAttackTriggerStay(other);
+                }
+            }
         }
     }
 

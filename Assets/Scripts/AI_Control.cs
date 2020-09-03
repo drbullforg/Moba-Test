@@ -17,7 +17,7 @@ public class AI_Control : MonoBehaviour
     public Transform attackPoint;
     public GameObject bulletPrefab;
 
-    protected string enemyTeam;
+    public string enemyTeam;
     public CharacterStatus status;
 
     public float atkSpeed = 10;
@@ -26,6 +26,8 @@ public class AI_Control : MonoBehaviour
     protected Collider areaTrigger;
     [SerializeField]
     protected Collider attackTrigger;
+
+    private bool isSkillInUsed;
 
     //public List<GameObject> enemyList = new List<GameObject>();
 
@@ -152,6 +154,11 @@ public class AI_Control : MonoBehaviour
                         state = "MoveToWaypoint";
                     }
                 }
+
+                if (target)
+                {
+                    state = "Attack";
+                }
             }
             else if (state == "MoveToWaypoint")
             {
@@ -159,6 +166,7 @@ public class AI_Control : MonoBehaviour
                 {
                     if (moveWaypoint)
                     {
+                        transform.LookAt(new Vector3(moveWaypoint.transform.position.x, transform.position.y, moveWaypoint.transform.position.z), Vector3.up);
                         //transform.position = Vector3.MoveTowards(transform.position, moveTarget.transform.position, characterMovement.playerSpeed);
                         Vector3 move = (moveWaypoint.transform.position - transform.position).normalized;
                         characterMovement.controller.Move(move * Time.deltaTime * characterMovement.playerSpeed);
@@ -179,6 +187,7 @@ public class AI_Control : MonoBehaviour
                 {
                     if (moveTarget)
                     {
+                        transform.LookAt(new Vector3(moveTarget.transform.position.x, transform.position.y, moveTarget.transform.position.z), Vector3.up);
                         //transform.position = Vector3.MoveTowards(transform.position, moveTarget.transform.position, characterMovement.playerSpeed);
                         Vector3 move = (moveTarget.transform.position - transform.position).normalized;
                         characterMovement.controller.Move(move * Time.deltaTime * characterMovement.playerSpeed);
@@ -197,16 +206,25 @@ public class AI_Control : MonoBehaviour
             {
                 if (target)
                 {
-                    if (atkCountingTime <= 0)
-                    {
-                        AttackNow();
-                        atkCountingTime = atkSpeed;
-                    }
+                    transform.LookAt(new Vector3(target.transform.position.x, transform.position.y, target.transform.position.z), Vector3.up);
 
-                    if (targetStatus.CheckDead())
+                    if (isSkillInUsed)
                     {
-                        target = null;
-                        state = "Standby";
+                        // use skill type selection
+                    }
+                    else
+                    {
+                        if (atkCountingTime <= 0)
+                        {
+                            AttackNow();
+                            atkCountingTime = atkSpeed;
+                        }
+
+                        if (targetStatus.CheckDead())
+                        {
+                            target = null;
+                            state = "Standby";
+                        }
                     }
                 }
                 else

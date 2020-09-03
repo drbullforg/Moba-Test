@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public enum GameState
 {
@@ -26,6 +27,9 @@ public class GameSystem : MonoBehaviour
     public List<GameObject> waypointTeamA = new List<GameObject>();
     public List<GameObject> waypointTeamB = new List<GameObject>();
 
+    public Transform heroA_spawnPoint;
+    public Transform heroB_spawnPoint;
+    public float heroResetTime = 3;
     public GameObject[] minionsMeleePrefab;
     public GameObject[] minionsRangePrefab;
 
@@ -34,6 +38,10 @@ public class GameSystem : MonoBehaviour
 
     public List<GameObject> teamA_Objs = new List<GameObject>();
     public List<GameObject> teamB_Objs = new List<GameObject>();
+
+    public Text[] btnSkills;
+
+    public GameObject player;
 
     private void Awake()
     {
@@ -47,8 +55,17 @@ public class GameSystem : MonoBehaviour
 
     public void SetStartGame()
     {
+        SetSkillBtn(player.GetComponent<SkillList>().skills);
         gameState = GameState.Start;
         InvokeRepeating("SpawnMinions", 1, 30);
+    }
+
+    public void SetSkillBtn(Skill[] skills)
+    {
+        for (int i = 0; i < skills.Length; i++)
+        {
+            btnSkills[i].text = skills[i].skillName;
+        }
     }
 
     private void Update()
@@ -56,9 +73,30 @@ public class GameSystem : MonoBehaviour
         Time.timeScale = timeScale;
     }
 
+    public void ResetHero(GameObject hero)
+    {
+        StartCoroutine(WaitingReset(hero));
+    }
+
+    IEnumerator WaitingReset(GameObject hero)
+    {
+        hero.SetActive(false);
+        if (hero.tag == "TeamA")
+        {
+            hero.transform.position = heroA_spawnPoint.position;
+        }
+        else
+        {
+            hero.transform.position = heroB_spawnPoint.position;
+        }
+        yield return new WaitForSeconds(heroResetTime);
+        hero.GetComponent<CharacterStatus>().Reset();
+        hero.SetActive(true);
+    }
+
     void SpawnMinions()
     {
-        for(int i=0;i<minionsA_Pos.Length;i++)
+        for (int i = 0; i < minionsA_Pos.Length; i++)
         {
             if (i == 0)
             {
@@ -81,7 +119,7 @@ public class GameSystem : MonoBehaviour
 
     public GameObject GetWaypoint(string team)
     {
-        if(team == "TeamA")
+        if (team == "TeamA")
         {
             return waypointTeamB.ToArray()[0];
         }
@@ -95,11 +133,11 @@ public class GameSystem : MonoBehaviour
     {
         if (team == "TeamA")
         {
-            if(waypointTeamA.Contains(obj))
+            if (waypointTeamA.Contains(obj))
             {
-                waypointTeamA.Remove(obj);  
+                waypointTeamA.Remove(obj);
 
-                if(waypointTeamA.Count <= 0)
+                if (waypointTeamA.Count <= 0)
                 {
                     GameEnd("TeamB");
                 }
@@ -121,9 +159,9 @@ public class GameSystem : MonoBehaviour
 
     public void BroardcastCheck(string team, GameObject obj)
     {
-        if(team == "TeamA")
+        if (team == "TeamA")
         {
-            foreach(GameObject item in teamB_Objs)
+            foreach (GameObject item in teamB_Objs)
             {
                 item.GetComponent<AI_Control>().CheckEnemyList(obj);
             }

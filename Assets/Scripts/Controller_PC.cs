@@ -54,20 +54,37 @@ public class Controller_PC : AI_Control
                 atkCountingTime -= Time.deltaTime;
             }
 
-            if (TCKInput.GetAction("fireBtn", EActionEvent.Press))
+            if (TCKInput.GetAction("fireBtn", EActionEvent.Click))
             {
-                StartCoroutine(ResetTrigger());
-
-                if (moveTarget)
-                {
-                    state = "MoveToTarget";
-                }
-
-                if(target)
+                if (target)
                 {
                     state = "Attack";
                 }
+                else if (moveTarget)
+                {
+                    state = "MoveToTarget";
+                }
+                else
+                {
+                    StartCoroutine(ResetTrigger());
+                }
             }
+
+            if(TCKInput.GetAction("skillBtn-1", EActionEvent.Click))
+            {
+                GetComponent<SkillList>().UseSkill(0);
+            }
+
+            if (TCKInput.GetAction("skillBtn-2", EActionEvent.Click))
+            {
+                GetComponent<SkillList>().UseSkill(1);
+            }
+
+            if (TCKInput.GetAction("skillBtn-3", EActionEvent.Click))
+            {
+                GetComponent<SkillList>().UseSkill(2);
+            }
+
             if (state == "Standby")
             {
                 if (isMovement)
@@ -93,6 +110,7 @@ public class Controller_PC : AI_Control
                 {
                     if (moveTarget)
                     {
+                        transform.LookAt(new Vector3(moveTarget.transform.position.x, transform.position.y, moveTarget.transform.position.z), Vector3.up);
                         //transform.position = Vector3.MoveTowards(transform.position, moveTarget.transform.position, characterMovement.playerSpeed);
                         Vector3 move = (moveTarget.transform.position - transform.position).normalized;
                         characterMovement.controller.Move(move * Time.deltaTime * characterMovement.playerSpeed);
@@ -103,6 +121,8 @@ public class Controller_PC : AI_Control
             {
                 if (target)
                 {
+                    transform.LookAt(new Vector3(target.transform.position.x, transform.position.y, target.transform.position.z), Vector3.up);
+
                     if (atkCountingTime <= 0)
                     {
                         AttackNow();
@@ -113,6 +133,7 @@ public class Controller_PC : AI_Control
                     {
                         target = null;
                         //state = "Standby";
+                        StartCoroutine(ResetTrigger());
                     }
                 }
             }

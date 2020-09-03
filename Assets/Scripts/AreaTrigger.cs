@@ -8,7 +8,13 @@ public class AreaTrigger : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        ai.OnAreaTriggerEnter(other);
+        if (other.GetComponent<CharacterStatus>())
+        {
+            if (!other.GetComponent<CharacterStatus>().CheckDead())
+            {
+                ai.OnAreaTriggerEnter(other);
+            }
+        }
     }
 
     //private void OnTriggerStay(Collider other)

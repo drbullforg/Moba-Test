@@ -24,6 +24,7 @@ public class CharacterStatus : MonoBehaviour
     public GameObject hudPrefab;
     public GameObject hudPoint;
     public Slider hpbar;
+    public bool hasBuf;
 
     private void Start()
     {
@@ -52,6 +53,10 @@ public class CharacterStatus : MonoBehaviour
     public void SetHP(int value)
     {
         _currentHP = value;
+        if(_currentHP > _maxHP)
+        {
+            _currentHP = _maxHP;
+        }
         if(hpbar)
         {
             float hp = (_currentHP * 1.0f) / (_maxHP * 1.0f);
@@ -66,7 +71,7 @@ public class CharacterStatus : MonoBehaviour
 
             if(isHero)
             {
-
+                GameSystem.instance.ResetHero(gameObject);
             }
             else
             {
@@ -79,6 +84,10 @@ public class CharacterStatus : MonoBehaviour
         }
     }
 
+    public void Reset()
+    {
+        SetHP(_maxHP);
+    }
     //public int GetMP()
     //{
     //    return _mp;
